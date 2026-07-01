@@ -17,7 +17,7 @@ public class CrudRestVerticle extends AbstractVerticle {
 
     String host = System.getenv().getOrDefault("DB_HOST", "localhost");
     String user = System.getenv().getOrDefault("DB_USER", "root");
-    String pass = System.getenv().getOrDefault("DB_PASS", "Gratis");
+    String pass = System.getenv().getOrDefault("DB_PASS", "");
 
     jdbc = JDBCClient.createShared(vertx, new JsonObject()
         .put("driver_class", "org.mariadb.jdbc.Driver")

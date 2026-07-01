@@ -1,147 +1,135 @@
-# ParkinGPT – Sistema de Gestión de Aparcamientos Inteligente 🚗
+# ParkinGPT
 
-ParkinGPT es una aplicación distribuida para la gestión inteligente de plazas de aparcamiento usando sensores, actuadores, nodos ESP32 y comunicación MQTT. Este proyecto ha sido desarrollado como parte de la asignatura de Diseño de Aplicaciones Distribuidas (DAD).
+Smart parking management system built as a team project for the Distributed Applications Design course at Universidad de Sevilla.
 
----
+The project combines backend services, REST endpoints, MQTT messaging, database persistence and an ESP32/Arduino hardware component for sensor and actuator integration.
 
-## 📌 Funcionalidades
+> [!NOTE]
+> This is a fork of the original team repository. It is presented as collaborative academic work and keeps explicit author credits.
 
-- Registro de sensores y actuadores vinculados a dispositivos.
-- Recepción y almacenamiento de datos de sensores (ultrasonido).
-- Evaluación automática de rangos válidos y control de actuadores (ej. LED).
-- Comunicación bidireccional mediante MQTT.
-- API RESTful para CRUD y lógica de negocio.
-- Consultas específicas por grupo, sensor y actuador.
+## Features
 
----
+- Sensor and actuator registration linked to parking devices.
+- Sensor data ingestion and persistence.
+- Automatic range evaluation and actuator control.
+- MQTT communication between hardware and backend services.
+- REST API for CRUD and business logic.
+- Postman collection for endpoint testing.
+- ESP32/Arduino sketch for distance sensing and LED control.
 
-## 🧩 Estructura del Proyecto
+## Architecture
 
+```text
+dad/
+  src/main/java/
+    mqtt/       MQTT client and event handling
+    parkingpt/  main parking controller
+    vertx/      REST endpoints and database access
+ParkinGpt.ino   ESP32/Arduino sketch
+parkingpt_db1.sql
+ParkinGPT.postman_collection.json
 ```
-parkingtp/
-├── mqtt/                 # Cliente MQTT (suscribe y publica)
-├── parkingpt/            # Controlador principal del sistema
-├── vertx/                # Endpoints REST de CRUD y lógica de negocio
-├── resources/
-│   └── schema.sql        # Script de creación de la base de datos
-├── README.md
-└── pom.xml               # Configuración del proyecto Maven
-```
 
----
+## Tech Stack
 
-## 🛠️ Tecnologías usadas
+- Java
+- Maven
+- Vert.x
+- MQTT / Mosquitto
+- MySQL or MariaDB
+- Postman
+- ESP32 / Arduino
 
-- Java + Vert.x
-- MySQL
-- MQTT (Mosquitto)
-- ESP32 (simulado o real)
-- Postman (para pruebas REST)
+## Setup
 
----
+Clone the repository:
 
-## ⚙️ Instalación y despliegue
-
-1. **Clona el repositorio:**
 ```bash
-git clone https://github.com/Juanpareja02/ParkinGPT-DAD_2025.git
+git clone https://github.com/hector-bartolome-chapado/ParkinGPT-DAD_2025.git
+cd ParkinGPT-DAD_2025
 ```
 
-2. **Configura la base de datos:**
-- Lanza el script `schema.sql` sobre una instancia MySQL.
-- Define las variables de entorno `DB_HOST`, `DB_USER` y `DB_PASS` con los datos de conexión (por defecto `localhost`, `root` y `Gratis`).
+Create the database using `parkingpt_db1.sql`.
 
-3. **Levanta el broker MQTT:**
+Set the database environment variables:
+
+```bash
+export DB_HOST=localhost
+export DB_USER=your_user
+export DB_PASS=your_password
+```
+
+Start an MQTT broker:
+
 ```bash
 docker run -it -p 1883:1883 eclipse-mosquitto
 ```
 
-4. **Compila y ejecuta:**
+Compile and run the Java backend from the Maven project folder:
+
 ```bash
+cd dad
 mvn clean compile exec:java -Dexec.mainClass=parkingpt.ParkingController
 ```
 
-### Variables de entorno
+## Main REST Endpoints
 
-- `DB_HOST`: host de la base de datos (por defecto `localhost`).
-- `DB_USER`: usuario de conexión (por defecto `root`).
-- `DB_PASS`: contraseña de conexión (por defecto `Gratis`).
+CRUD endpoints:
 
----
+- `/api/sensors`
+- `/api/actuators`
+- `/api/devices`
+- `/api/groups`
+- `/api/users`
 
-## 🔌 Endpoints REST principales
+Business logic endpoints:
 
-### 📋 CRUD (puerto 8088)
-- `/api/sensors`, `/api/actuators`, `/api/devices`, `/api/groups`, `/api/users`
-- Métodos soportados: `GET`, `POST`, `PUT`, `DELETE`
-
-### 🤖 Lógica de negocio (puerto 8090)
 - `POST /api/business/sensorData`
 - `GET /api/business/sensorValues/:id_sensor/latest`
 - `GET /api/business/actuatorStates/:id_actuator/latest`
 - `GET /api/business/group/:id_grupo/sensorValues/latest`
 - `GET /api/business/group/:id_grupo/actuatorStates/latest`
 
----
+## MQTT Topics
 
-## 📡 Tópicos MQTT utilizados
+| Purpose | Example topic |
+| --- | --- |
+| Sensor input | `grupo_1/canal_sensor` |
+| Actuator control | `grupo_1/canal_actuador` |
 
-| Propósito           | Tópico ejemplo              |
-|--------------------|-----------------------------|
-| Recepción sensores | `grupo_1/canal_sensor`       |
-| Control actuadores | `grupo_1/canal_actuador`     |
-
-Los tópicos se obtienen desde la base de datos (`groups.canal_mqtt`).
-
-Los sensores pueden publicar valores en formato JSON en su tópico MQTT:
+Example sensor payload:
 
 ```json
 { "id_sensor": 1, "valor": 23.5 }
 ```
 
-El cliente MQTT procesa estos mensajes y reenvía el evento al bus (`sensor.outOfRange` o `sensor.inRange`).
+## ESP32 / Arduino Sketch
 
----
+Open `ParkinGpt.ino` with the Arduino IDE and replace the placeholder Wi-Fi and broker values:
 
-## 🎮 Uso del sketch `ParkinGpt.ino`
+```cpp
+const char* WIFI_SSID   = "YOUR_WIFI_SSID";
+const char* WIFI_PASS   = "YOUR_WIFI_PASSWORD";
+const char* MQTT_SERVER = "broker.hivemq.com";
+```
 
-1. Abre el archivo `ParkinGpt.ino` con el IDE de Arduino y ajusta las credenciales:
+The sensor publishes distances to `grupo_1/canal_sensor`. The actuator topic accepts commands such as `ON`, `OFF` and `AUTO`.
 
-   ```cpp
-   const char* WIFI_SSID   = "MiRed";
-   const char* WIFI_PASS   = "MiPassword";
-   const char* MQTT_SERVER = "broker.hivemq.com";
-   ```
+## My Portfolio Focus
 
-2. Compila y sube el sketch a tu ESP32.
-3. El sensor publicará la distancia en `grupo_1/canal_sensor` en formato JSON
-   (`{"id_sensor": 1, "valor": <distancia>}`).
-4. Envía `ON`, `OFF` o `AUTO` al tópico `grupo_1/canal_actuador` para controlar
-   los LEDs de forma remota.
+For interviews, this project is useful to discuss:
 
----
+- Designing REST APIs around IoT entities.
+- Combining MQTT events with backend state.
+- Persisting sensor and actuator data in a relational database.
+- Coordinating software and hardware parts of a distributed system.
+- Testing APIs with Postman.
 
-## 📦 Postman
+## Authors and Credits
 
-El archivo `ParkinGPT.postman_collection.json` contiene todos los endpoints listos para probar. (Asegúrate de tener los puertos activos y los datos insertados en BD antes de lanzar consultas).
+- Juan Alvaro Pareja
+- Marcos Guisado
+- Hector Bartolome
 
----
-
-## 🧠 Autores y créditos
-
-- Juan Álvaro Pareja – Ingeniería Informática de Computadores (Universidad de Sevilla)
-- Marcos Guisado – Ingeniería Informática de Computadores (Universidad de Sevilla)
-- Hector Bartolomé – Ingeniería Informática de Computadores (Universidad de Sevilla)
-
----
-
-## 🏁 Pendientes / Mejoras futuras
-
-- Extraer rangos dinámicamente desde la base de datos.
-- Añadir autenticación de usuarios.
-- Dashboard web de visualización.
-
----
-
-¡Gracias por visitar ParkinGPT! Aparcar nunca fue tan inteligente 🚦
+Computer Engineering, Universidad de Sevilla.
 

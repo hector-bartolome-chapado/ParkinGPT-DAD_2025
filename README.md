@@ -1,13 +1,25 @@
 # ParkinGPT
 
+![Java](https://img.shields.io/badge/Java-Backend-ED8B00?logo=openjdk&logoColor=white)
+![Vert.x](https://img.shields.io/badge/Vert.x-REST%20API-782A90)
+![MQTT](https://img.shields.io/badge/MQTT-IoT%20Messaging-660066)
+![MySQL](https://img.shields.io/badge/MySQL-Persistence-4479A1?logo=mysql&logoColor=white)
+![Status](https://img.shields.io/badge/status-team%20academic%20project-blue)
+
 Smart parking management system built as a team project for the Distributed Applications Design course at Universidad de Sevilla.
 
-The project combines backend services, REST endpoints, MQTT messaging, database persistence and an ESP32/Arduino hardware component for sensor and actuator integration.
+The project combines Java backend services, REST endpoints, MQTT messaging, relational persistence and an ESP32/Arduino hardware component for sensor and actuator integration.
 
 > [!NOTE]
 > This is a fork of the original team repository. It is presented as collaborative academic work and keeps explicit author credits.
 
-## Features
+## What It Does
+
+ParkinGPT models an IoT parking scenario where sensors publish distance data, backend services persist and evaluate that data, and actuators react through MQTT messages.
+
+The project is useful as a portfolio piece because it connects backend development with distributed communication and hardware integration.
+
+## Core Features
 
 - Sensor and actuator registration linked to parking devices.
 - Sensor data ingestion and persistence.
@@ -20,14 +32,33 @@ The project combines backend services, REST endpoints, MQTT messaging, database 
 ## Architecture
 
 ```text
+ESP32 sensor
+   |
+   | MQTT
+   v
+Java backend / Vert.x REST API
+   |
+   v
+MySQL persistence
+   |
+   v
+Business logic -> actuator state -> MQTT command
+```
+
+## Repository Structure
+
+```text
 dad/
   src/main/java/
     mqtt/       MQTT client and event handling
-    parkingpt/  main parking controller
+    parkingpt/  parking controller and domain flow
+    router/     API route composition
+    types/      sensor, actuator and device models
     vertx/      REST endpoints and database access
-ParkinGpt.ino   ESP32/Arduino sketch
-parkingpt_db1.sql
-ParkinGPT.postman_collection.json
+
+ParkinGpt.ino                     ESP32/Arduino sketch
+parkingpt_db1.sql                 database schema
+ParkinGPT.postman_collection.json API testing collection
 ```
 
 ## Tech Stack
@@ -49,7 +80,11 @@ git clone https://github.com/hector-bartolome-chapado/ParkinGPT-DAD_2025.git
 cd ParkinGPT-DAD_2025
 ```
 
-Create the database using `parkingpt_db1.sql`.
+Create the database using:
+
+```text
+parkingpt_db1.sql
+```
 
 Set the database environment variables:
 
@@ -115,15 +150,16 @@ const char* MQTT_SERVER = "broker.hivemq.com";
 
 The sensor publishes distances to `grupo_1/canal_sensor`. The actuator topic accepts commands such as `ON`, `OFF` and `AUTO`.
 
-## My Portfolio Focus
+## Interview Talking Points
 
-For interviews, this project is useful to discuss:
+This project is useful to discuss:
 
-- Designing REST APIs around IoT entities.
-- Combining MQTT events with backend state.
-- Persisting sensor and actuator data in a relational database.
-- Coordinating software and hardware parts of a distributed system.
-- Testing APIs with Postman.
+- designing REST APIs around IoT entities;
+- combining MQTT events with backend state;
+- persisting sensor and actuator data in a relational database;
+- coordinating software and hardware parts of a distributed system;
+- testing APIs with Postman;
+- documenting a team project honestly and clearly.
 
 ## Authors and Credits
 
@@ -133,3 +169,11 @@ For interviews, this project is useful to discuss:
 
 Computer Engineering, Universidad de Sevilla.
 
+## Portfolio
+
+**Hector Bartolome Chapado**
+
+Computer Engineering graduate, Universidad de Sevilla
+
+- GitHub: [hector-bartolome-chapado](https://github.com/hector-bartolome-chapado)
+- LinkedIn: [linkedin.com/in/infohbc](https://www.linkedin.com/in/infohbc/)
